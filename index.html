@@ -4,8 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Razones trigonométricas – simulación interactiva</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#F2F6FA; --card:#FFFFFF; --ink:#15213B; --muted:#5B6783; --line:#D5DEEA;
@@ -43,23 +41,42 @@ button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
 .check{display:flex;gap:8px;align-items:center;font-size:.85rem;margin-top:10px}
 .note{margin:12px 0 0;font-size:.85rem;color:var(--muted)}
 @media(prefers-reduced-motion:reduce){.bar span{transition:none}}
+.brand{margin:0;color:#4338a0;font-weight:800;font-size:.85rem;letter-spacing:.05em}
+header{padding:12px 0 6px} h1{font-size:clamp(1.7rem,4vw,2.65rem);line-height:1.13;margin:.25em 0}
+.card{padding:clamp(12px,2vw,22px);box-shadow:0 8px 30px #2334590b}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.actions button,#next{border-radius:9px;font-weight:650}
+button[aria-pressed="true"],#next{background:var(--hi);color:white;border-color:var(--hi)}
+[hidden]{display:none!important}
+.row{width:100%;border-radius:8px;text-align:left;padding:8px;grid-template-columns:4.1rem 3.8rem minmax(0,1fr) auto;border:1px solid transparent}
+.row[aria-pressed="true"]{background:#eef0ff;color:var(--ink);border-color:#777cd3}
+.row .num{font-size:.8rem}.row .val{font-size:.96rem}
+.meter{display:grid;grid-template-columns:3.6rem 1fr;gap:9px;align-items:center;font-size:.77rem}
+.practice{margin-top:16px}.practice-head{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h2{font-size:1.2rem;margin:0}#progress,#feedback{font-size:.9rem}#feedback:empty{display:none}
+#feedback[data-correct="true"]{color:#066552}#feedback[data-correct="false"]{color:#9d2616}
+#reason,#comparison{background:#eff3ff;border-radius:8px;padding:9px 11px}
+#hnd:focus-visible{stroke:#ad6200;stroke-width:6}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+@media(max-width:390px){.row{grid-template-columns:3.4rem 3.35rem minmax(0,1fr) auto;gap:3px;padding:7px 4px}.row .num{font-size:.72rem}}
 </style>
 </head>
 <body>
 <main>
-  <h1>Razones trigonométricas</h1>
-  <p class="lead">Arrastra el vértice superior del triángulo o usa los controles. Observa qué cambia y qué no cuando varían el ángulo y el tamaño.</p>
+  <header><p class="brand">TuProfe20 Lab</p><h1>Razones trigonométricas</h1>
+  <p class="lead">Arrastra el vértice B o usa los controles. Luego selecciona una razón para ver qué lados compara.</p></header>
 
   <div class="grid">
     <section class="card" aria-label="Triángulo rectángulo">
-      <svg id="svg" viewBox="0 0 640 400" role="img" aria-label="Triángulo rectángulo interactivo">
+      <svg id="svg" viewBox="0 0 540 420" role="group" aria-label="Triángulo rectángulo interactivo">
         <defs>
           <pattern id="g" width="34" height="34" patternUnits="userSpaceOnUse">
             <path d="M34 0H0V34" fill="none" stroke="#DCE5F0" stroke-width="1"/>
           </pattern>
         </defs>
-        <rect width="640" height="400" fill="#F8FBFE"/>
-        <rect width="640" height="400" fill="url(#g)"/>
+        <rect width="540" height="420" fill="#F8FBFE"/>
+        <rect width="540" height="420" fill="url(#g)"/>
+        <polygon id="doubleTri" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="7 5" visibility="hidden"/>
         <polygon id="tri" fill="rgba(57,73,171,.07)" stroke="none"/>
         <line id="lAd" stroke="#00796B" stroke-width="5" stroke-linecap="round"/>
         <line id="lOp" stroke="#C2185B" stroke-width="5" stroke-linecap="round"/>
@@ -73,13 +90,19 @@ button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
         <text id="tA" font-size="15" fill="#5B6783">A</text>
         <text id="tB" font-size="15" fill="#5B6783">B</text>
         <text id="tC" font-size="15" fill="#5B6783">C</text>
-        <circle id="hnd" r="12" fill="#fff" stroke="#3949AB" stroke-width="4" style="cursor:grab" tabindex="0" role="slider" aria-label="Vértice B: flechas para cambiar ángulo y tamaño"/>
+        <circle id="hnd" r="12" fill="#fff" stroke="#3949AB" stroke-width="4" style="cursor:grab" tabindex="0" role="slider" aria-label="Ángulo del vértice B" aria-valuemin="1" aria-valuemax="89"/>
       </svg>
       <div class="legend">
         <span class="co"><b>CO</b> cateto opuesto a θ</span>
         <span class="ca"><b>CA</b> cateto adyacente a θ</span>
         <span class="h"><b>H</b> hipotenusa</span>
       </div>
+      <div class="actions">
+        <button id="compare" aria-pressed="false">Comparar con el doble</button>
+        <button id="play" aria-pressed="false">Animar ángulo</button>
+        <button id="reset">Restablecer</button>
+      </div>
+      <p id="comparison" class="note" hidden></p>
     </section>
 
     <section class="card" aria-label="Controles y razones">
@@ -102,23 +125,33 @@ button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
       </div>
 
       <div class="bars" aria-hidden="true">
-        <div class="bar"><span id="bS" style="background:#C2185B"></span></div>
-        <div class="bar"><span id="bC" style="background:#00796B"></span></div>
+        <div class="meter"><b>Seno</b><div class="bar"><span id="bS" style="background:#C2185B"></span></div></div>
+        <div class="meter"><b>Coseno</b><div class="bar"><span id="bC" style="background:#00796B"></span></div></div>
       </div>
 
       <div id="rows"></div>
+      <p id="reason" class="note"></p>
 
       <label class="check"><input type="checkbox" id="rec"> Mostrar razones recíprocas (cot, sec, csc)</label>
       <p class="note">Cambia H y verás que las razones se mantienen: dependen solo del ángulo θ, no del tamaño del triángulo.</p>
     </section>
   </div>
+  <section class="card practice" aria-labelledby="practice-title">
+    <div class="practice-head"><h2 id="practice-title">Ponlo a prueba</h2><span id="progress"></span></div>
+    <p id="question"></p>
+    <div id="answers" class="actions" role="group" aria-labelledby="question"></div>
+    <p id="feedback" role="status"></p>
+    <button id="next" hidden>Siguiente reto</button>
+  </section>
 </main>
 
 <script>
 (function(){
   var $ = function(id){return document.getElementById(id)};
-  var S = 34, AX = 70, AY = 372;
-  var st = {a:37, h:5};
+  var AX = 74, AY = 365, BASE_SCALE = 32;
+  var st = {a:37, h:5, selected:"sen", compare:false};
+  var scale = BASE_SCALE;
+  var animation = null;
 
   var defs = [
     {n:'sen θ', f:['co','h'], k:'sen'},
@@ -130,13 +163,20 @@ button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
   ];
   var L = {co:'CO', ca:'CA', h:'H'};
 
-  function fmt(x,d){return x.toFixed(d==null?3:d)}
+  function fmt(x,d){return x.toFixed(d==null?3:d).replace('.', ',')}
   function set(el,o){for(var k in o) el.setAttribute(k,o[k])}
 
   function render(){
     var rad = st.a*Math.PI/180;
     var co = st.h*Math.sin(rad), ca = st.h*Math.cos(rad);
-    var Cx = AX+ca*S, By = AY-co*S;
+    scale = BASE_SCALE / (st.compare ? 2 : 1);
+    var Cx = AX+ca*scale, By = AY-co*scale;
+    var doubleX = AX+2*ca*scale, doubleY = AY-2*co*scale;
+    set($('doubleTri'), {points: AX+','+AY+' '+doubleX+','+AY+' '+doubleX+','+doubleY,
+      visibility: st.compare ? 'visible' : 'hidden'});
+    $('comparison').hidden = !st.compare;
+    $('comparison').textContent = 'Triángulo punteado · H: '+fmt(st.h,1)+' → '+fmt(2*st.h,1)+
+      '. Sus tres lados se duplican. Con θ = '+st.a+'°, el coseno sigue siendo '+fmt(Math.cos(rad))+'.';
     var vals = {co:co, ca:ca, h:st.h};
 
     set($('tri'),{points:AX+','+AY+' '+Cx+','+AY+' '+Cx+','+By});
@@ -145,40 +185,51 @@ button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
     set($('lHi'),{x1:AX,y1:AY,x2:Cx,y2:By});
     set($('hnd'),{cx:Cx,cy:By,'aria-valuenow':Math.round(st.a)});
 
-    var q = Math.min(14, ca*S*.5, co*S*.5);
+    var q = Math.min(14, ca*scale*.5, co*scale*.5);
     set($('rt'),{d:'M'+(Cx-q)+' '+AY+' L'+(Cx-q)+' '+(AY-q)+' L'+Cx+' '+(AY-q)});
 
-    var r = Math.min(50, ca*S*.7);
+    var r = Math.min(50, ca*scale*.7);
     set($('arc'),{d:'M'+AX+' '+AY+' L'+(AX+r)+' '+AY+' A'+r+' '+r+' 0 0 0 '+(AX+r*Math.cos(rad))+' '+(AY-r*Math.sin(rad))+' Z'});
-    var tr = Math.min(r+22, Math.max(r+10, 34));
-    set($('tTheta'),{x:AX+(r+20)*Math.cos(rad/2),y:AY-(r+20)*Math.sin(rad/2)});
-    $('tTheta').textContent = 'θ = ' + fmt(st.a,0)+'°';
-    $('tTheta').setAttribute('text-anchor','start');
-    set($('tTheta'),{x:AX+r+8,y:AY-14});
+    $('tTheta').textContent = 'θ = ' + st.a+'°';
+    set($('tTheta'),{x:18,y:25,'text-anchor':'start'});
 
     set($('tAd'),{x:(AX+Cx)/2,y:AY+24}); $('tAd').textContent = 'CA = '+fmt(ca,2);
     set($('tOp'),{x:Cx+10,y:(AY+By)/2+5}); $('tOp').textContent = 'CO = '+fmt(co,2);
     var mx=(AX+Cx)/2, my=(AY+By)/2;
     var dx=Cx-AX, dy=By-AY, len=Math.hypot(dx,dy)||1;
     set($('tHi'),{x:mx+(dy/len)*22,y:my-(dx/len)*22+5}); $('tHi').textContent = 'H = '+fmt(st.h,2);
-    set($('tA'),{x:AX-16,y:AY+18}); set($('tB'),{x:Cx+14,y:By-12}); set($('tC'),{x:Cx+10,y:AY+18});
+    set($('tA'),{x:AX-30,y:AY+9}); set($('tB'),{x:Cx+15,y:By-10}); set($('tC'),{x:Cx+17,y:AY+18});
 
     $('vA').textContent = fmt(st.a,0)+'°';
     $('vH').textContent = fmt(st.h,1);
     $('rA').value = Math.round(st.a); $('rH').value = st.h;
     var chips = document.querySelectorAll('#chips button');
-    for(var i=0;i<chips.length;i++) chips[i].classList.toggle('on', +chips[i].dataset.a === Math.round(st.a));
-
-    var showRec = $('rec').checked, html='';
-    defs.forEach(function(d){
-      if(d.r && !showRec) return;
-      var n = vals[d.f[0]], m = vals[d.f[1]];
-      html += '<div class="row"><span class="name">'+d.n+'</span>'+
-        '<span class="frac"><i class="'+d.f[0]+'">'+L[d.f[0]]+'</i> / <i class="'+d.f[1]+'">'+L[d.f[1]]+'</i></span>'+
-        '<span class="num">'+fmt(n,2)+' / '+fmt(m,2)+'</span>'+
-        '<span class="val">'+fmt(n/m)+'</span></div>';
+    chips.forEach(button => {
+      const active = +button.dataset.a === st.a;
+      button.classList.toggle('on', active);
+      button.setAttribute('aria-pressed', active);
     });
-    $('rows').innerHTML = html;
+
+    const showRec = $('rec').checked;
+    const selected = defs.find(def => def.k === st.selected);
+    const sideNames = {co:'cateto opuesto', ca:'cateto adyacente', h:'hipotenusa'};
+    const lines = {co:'lOp', ca:'lAd', h:'lHi'};
+    Object.keys(lines).forEach(side => {
+      const active = selected.f.includes(side);
+      set($(lines[side]), {'stroke-width':active ? 6 : 3, opacity:active ? 1 : .45});
+    });
+    const [top, bottom] = selected.f;
+    $('reason').textContent = selected.n+' se obtiene al dividir '+sideNames[top]+
+      ' entre '+sideNames[bottom]+'. El resultado se calcula antes de redondear las longitudes.';
+    defs.forEach(def => {
+      const row = $('ratio-'+def.k);
+      const [numerator, denominator] = def.f;
+      const n = vals[numerator], m = vals[denominator];
+      row.hidden = Boolean(def.r && !showRec);
+      row.setAttribute('aria-pressed', def.k === st.selected);
+      row.querySelector('.num').textContent = fmt(n,2)+' ÷ '+fmt(m,2);
+      row.querySelector('.val').textContent = '≈ '+fmt(n/m);
+    });
     $('bS').style.width = (Math.sin(rad)*100)+'%';
     $('bC').style.width = (Math.cos(rad)*100)+'%';
   }
@@ -191,33 +242,133 @@ button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
     var p = svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY;
     return p.matrixTransform(svg.getScreenCTM().inverse());
   }
-  hnd.addEventListener('pointerdown',function(e){drag=true;hnd.setPointerCapture(e.pointerId);hnd.style.cursor='grabbing';e.preventDefault()});
-  hnd.addEventListener('pointerup',function(){drag=false;hnd.style.cursor='grab'});
+  hnd.addEventListener('pointerdown',function(e){drag=true;hnd.setPointerCapture(e.pointerId);hnd.style.cursor='grabbing';stopAnimation();e.preventDefault()});
+  ['pointerup','pointercancel','lostpointercapture'].forEach(event => {
+    hnd.addEventListener(event, () => {drag=false;hnd.style.cursor='grab'});
+  });
   hnd.addEventListener('pointermove',function(e){
     if(!drag) return;
     var p = toSvg(e), dx=p.x-AX, dy=AY-p.y;
-    st.a = clamp(Math.atan2(dy,dx)*180/Math.PI,1,89);
-    st.h = clamp(Math.round(Math.hypot(dx,dy)/S*2)/2,2,10);
+    st.a = clamp(Math.round(Math.atan2(dy,dx)*180/Math.PI),1,89);
+    st.h = clamp(Math.round(Math.hypot(dx,dy)/scale*2)/2,2,10);
     render();
   });
   hnd.addEventListener('keydown',function(e){
     var k=e.key, ok=true;
-    if(k==='ArrowRight'||k==='ArrowUp') st.a=clamp(Math.round(st.a)+(k==='ArrowUp'?1:-1)*-1,1,89);
+    if(k==='ArrowRight'||k==='ArrowUp') st.a=clamp(Math.round(st.a)+1,1,89);
     else if(k==='ArrowLeft'||k==='ArrowDown') st.a=clamp(Math.round(st.a)-1,1,89);
     else if(k==='+') st.h=clamp(st.h+.5,2,10);
     else if(k==='-') st.h=clamp(st.h-.5,2,10);
     else ok=false;
-    if(ok){e.preventDefault();render()}
+    if(ok){e.preventDefault();stopAnimation();render()}
   });
 
-  $('rA').addEventListener('input',function(e){st.a=+e.target.value;render()});
+  $('rA').addEventListener('input',function(e){stopAnimation();st.a=+e.target.value;render()});
   $('rH').addEventListener('input',function(e){st.h=+e.target.value;render()});
-  $('rec').addEventListener('change',render);
+  $('rec').addEventListener('change', () => {
+    if (!$('rec').checked && defs.find(def => def.k === st.selected).r) st.selected = 'sen';
+    render();
+  });
   $('chips').addEventListener('click',function(e){
     var b=e.target.closest('button'); if(!b) return;
-    st.a=+b.dataset.a; render();
+    stopAnimation();st.a=+b.dataset.a; render();
   });
 
+  function stopAnimation(){
+    window.clearInterval(animation);
+    animation = null;
+    $('play').textContent = 'Animar ángulo';
+    $('play').setAttribute('aria-pressed', 'false');
+  }
+
+  $('play').addEventListener('click', () => {
+    if (animation !== null) {
+      stopAnimation();
+      return;
+    }
+    $('play').textContent = 'Pausar animación';
+    $('play').setAttribute('aria-pressed', 'true');
+    let direction = st.a === 89 ? -1 : 1;
+    animation = window.setInterval(() => {
+      st.a += direction;
+      if (st.a === 89 || st.a === 1) direction *= -1;
+      render();
+    }, 85);
+  });
+
+  $('compare').addEventListener('click', () => {
+    st.compare = !st.compare;
+    $('compare').setAttribute('aria-pressed', st.compare);
+    render();
+  });
+
+  $('reset').addEventListener('click', () => {
+    stopAnimation();
+    Object.assign(st, {a:37, h:5, selected:'sen', compare:false});
+    $('compare').setAttribute('aria-pressed', 'false');
+    $('rec').checked = false;
+    render();
+  });
+
+  defs.forEach(def => {
+    const row = document.createElement('button');
+    const [numerator, denominator] = def.f;
+    row.className = 'row';
+    row.id = 'ratio-'+def.k;
+    row.innerHTML = '<span class="name">'+def.n+'</span><span class="frac"><i class="'+
+      numerator+'">'+L[numerator]+'</i> / <i class="'+denominator+'">'+L[denominator]+
+      '</i></span><span class="num"></span><span class="val"></span>';
+    row.addEventListener('click', () => {
+      st.selected = def.k;
+      render();
+    });
+    $('rows').append(row);
+  });
+
+  const challenges = [
+    {question:'¿Qué lados necesitas para calcular el seno de θ?',
+      options:['CA ÷ H','CO ÷ H','CO ÷ CA'], correct:1, hint:'Busca el lado frente a θ y divídelo entre la hipotenusa.', reason:'El seno es cateto opuesto dividido entre hipotenusa.'},
+    {question:'Si duplicas la hipotenusa y mantienes θ, ¿qué ocurre con el coseno?',
+      options:['Se duplica','Se reduce a la mitad','Se mantiene'], correct:2, hint:'Usa “Comparar con el doble” y mira cómo cambian ambos lados de la división.', reason:'El cateto adyacente y la hipotenusa se duplican, por lo que su cociente se mantiene.'},
+    {question:'Selecciona 45°. Si ambos catetos tienen la misma longitud, ¿cuánto vale la tangente?',
+      options:['1','0,707','2'], correct:0, hint:'Selecciona la tangente y observa qué sucede al dividir dos longitudes iguales.', reason:'La tangente es CO ÷ CA. A 45°, ambos catetos son iguales y el cociente es 1.'},
+    {question:'Si el cateto opuesto mide 6 y el adyacente mide 8, ¿cuánto vale la tangente?',
+      options:['0,60','0,75','1,33'], correct:1, hint:'Divide la longitud del cateto opuesto entre la del adyacente.', reason:'tan θ = 6 ÷ 8 = 0,75.'}
+  ];
+  let challengeIndex = 0;
+
+  function showChallenge(){
+    const challenge = challenges[challengeIndex];
+    $('progress').textContent = (challengeIndex+1)+' de '+challenges.length;
+    $('question').textContent = challenge.question;
+    $('feedback').textContent = '';
+    $('next').hidden = true;
+    $('answers').replaceChildren();
+    challenge.options.forEach((option, index) => {
+      const button = document.createElement('button');
+      button.textContent = option;
+      button.addEventListener('click', () => {
+        if (!$('next').hidden) return;
+        const correct = index === challenge.correct;
+        $('feedback').dataset.correct = correct;
+        $('feedback').textContent = correct ? '¡Correcto! '+challenge.reason : 'Inténtalo otra vez. '+challenge.hint;
+        if (correct) {
+          button.setAttribute('aria-pressed', 'true');
+          $('next').hidden = false;
+        }
+      });
+      $('answers').append(button);
+    });
+    $('next').textContent = challengeIndex === challenges.length-1 ? 'Volver a practicar' : 'Siguiente reto';
+  }
+
+  $('next').addEventListener('click', () => {
+    challengeIndex = (challengeIndex+1) % challenges.length;
+    showChallenge();
+    $('answers').firstElementChild.focus();
+  });
+
+  showChallenge();
   render();
 })();
 </script>
