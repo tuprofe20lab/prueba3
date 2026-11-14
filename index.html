@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Razones trigonométricas – simulación interactiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F2F6FA; --card:#FFFFFF; --ink:#15213B; --muted:#5B6783; --line:#D5DEEA;
+  --op:#C2185B; --ad:#00796B; --hi:#3949AB;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Lexend',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.5}
+main{max-width:1080px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:1.55rem;margin:0 0 4px;letter-spacing:-.01em}
+.lead{margin:0 0 18px;color:var(--muted);max-width:60ch}
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+svg{display:block;width:100%;height:auto;touch-action:none;border-radius:8px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:10px 2px 0;font-size:.85rem;color:var(--muted)}
+.legend b{font-weight:600}
+.co{color:var(--op)} .ca{color:var(--ad)} .h{color:var(--hi)}
+.ctrl{display:grid;gap:10px;margin-bottom:14px}
+.ctrl label{display:flex;justify-content:space-between;font-size:.9rem;font-weight:600}
+input[type=range]{width:100%;accent-color:var(--hi)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:.85rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--hi)}
+button.on{background:var(--hi);color:#fff;border-color:var(--hi)}
+:focus-visible{outline:3px solid #FFB300;outline-offset:2px}
+.row{display:grid;grid-template-columns:5.2rem 3.6rem 1fr auto;align-items:center;gap:6px;padding:8px 0;border-top:1px solid var(--line);font-size:.9rem}
+.row:first-child{border-top:0}
+.row .name{font-weight:700}
+.row .num{color:var(--muted);font-variant-numeric:tabular-nums}
+.row .val{font-weight:700;font-size:1.05rem;font-variant-numeric:tabular-nums}
+.frac i{font-style:normal;font-weight:600}
+.bars{display:grid;gap:6px;margin:4px 0 12px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar span{display:block;height:100%;width:0;transition:width .12s}
+.check{display:flex;gap:8px;align-items:center;font-size:.85rem;margin-top:10px}
+.note{margin:12px 0 0;font-size:.85rem;color:var(--muted)}
+@media(prefers-reduced-motion:reduce){.bar span{transition:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Razones trigonométricas</h1>
+  <p class="lead">Arrastra el vértice superior del triángulo o usa los controles. Observa qué cambia y qué no cuando varían el ángulo y el tamaño.</p>
+
+  <div class="grid">
+    <section class="card" aria-label="Triángulo rectángulo">
+      <svg id="svg" viewBox="0 0 640 400" role="img" aria-label="Triángulo rectángulo interactivo">
+        <defs>
+          <pattern id="g" width="34" height="34" patternUnits="userSpaceOnUse">
+            <path d="M34 0H0V34" fill="none" stroke="#DCE5F0" stroke-width="1"/>
+          </pattern>
+        </defs>
+        <rect width="640" height="400" fill="#F8FBFE"/>
+        <rect width="640" height="400" fill="url(#g)"/>
+        <polygon id="tri" fill="rgba(57,73,171,.07)" stroke="none"/>
+        <line id="lAd" stroke="#00796B" stroke-width="5" stroke-linecap="round"/>
+        <line id="lOp" stroke="#C2185B" stroke-width="5" stroke-linecap="round"/>
+        <line id="lHi" stroke="#3949AB" stroke-width="5" stroke-linecap="round"/>
+        <path id="rt" fill="none" stroke="#15213B" stroke-width="2"/>
+        <path id="arc" fill="rgba(57,73,171,.18)" stroke="#15213B" stroke-width="2"/>
+        <text id="tTheta" font-size="20" font-weight="700" fill="#15213B" text-anchor="middle" dominant-baseline="middle">θ</text>
+        <text id="tAd" font-size="16" font-weight="700" fill="#00796B" text-anchor="middle"></text>
+        <text id="tOp" font-size="16" font-weight="700" fill="#C2185B"></text>
+        <text id="tHi" font-size="16" font-weight="700" fill="#3949AB" text-anchor="middle"></text>
+        <text id="tA" font-size="15" fill="#5B6783">A</text>
+        <text id="tB" font-size="15" fill="#5B6783">B</text>
+        <text id="tC" font-size="15" fill="#5B6783">C</text>
+        <circle id="hnd" r="12" fill="#fff" stroke="#3949AB" stroke-width="4" style="cursor:grab" tabindex="0" role="slider" aria-label="Vértice B: flechas para cambiar ángulo y tamaño"/>
+      </svg>
+      <div class="legend">
+        <span class="co"><b>CO</b> cateto opuesto a θ</span>
+        <span class="ca"><b>CA</b> cateto adyacente a θ</span>
+        <span class="h"><b>H</b> hipotenusa</span>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Controles y razones">
+      <div class="ctrl">
+        <div>
+          <label for="rA"><span>Ángulo θ</span><span id="vA"></span></label>
+          <input id="rA" type="range" min="1" max="89" step="1" value="37">
+        </div>
+        <div>
+          <label for="rH"><span>Hipotenusa H</span><span id="vH"></span></label>
+          <input id="rH" type="range" min="2" max="10" step="0.5" value="5">
+        </div>
+        <div class="chips" id="chips" aria-label="Ángulos notables">
+          <button data-a="30">30°</button>
+          <button data-a="37">37°</button>
+          <button data-a="45">45°</button>
+          <button data-a="53">53°</button>
+          <button data-a="60">60°</button>
+        </div>
+      </div>
+
+      <div class="bars" aria-hidden="true">
+        <div class="bar"><span id="bS" style="background:#C2185B"></span></div>
+        <div class="bar"><span id="bC" style="background:#00796B"></span></div>
+      </div>
+
+      <div id="rows"></div>
+
+      <label class="check"><input type="checkbox" id="rec"> Mostrar razones recíprocas (cot, sec, csc)</label>
+      <p class="note">Cambia H y verás que las razones se mantienen: dependen solo del ángulo θ, no del tamaño del triángulo.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+(function(){
+  var $ = function(id){return document.getElementById(id)};
+  var S = 34, AX = 70, AY = 372;
+  var st = {a:37, h:5};
+
+  var defs = [
+    {n:'sen θ', f:['co','h'], k:'sen'},
+    {n:'cos θ', f:['ca','h'], k:'cos'},
+    {n:'tan θ', f:['co','ca'], k:'tan'},
+    {n:'cot θ', f:['ca','co'], k:'cot', r:1},
+    {n:'sec θ', f:['h','ca'], k:'sec', r:1},
+    {n:'csc θ', f:['h','co'], k:'csc', r:1}
+  ];
+  var L = {co:'CO', ca:'CA', h:'H'};
+
+  function fmt(x,d){return x.toFixed(d==null?3:d)}
+  function set(el,o){for(var k in o) el.setAttribute(k,o[k])}
+
+  function render(){
+    var rad = st.a*Math.PI/180;
+    var co = st.h*Math.sin(rad), ca = st.h*Math.cos(rad);
+    var Cx = AX+ca*S, By = AY-co*S;
+    var vals = {co:co, ca:ca, h:st.h};
+
+    set($('tri'),{points:AX+','+AY+' '+Cx+','+AY+' '+Cx+','+By});
+    set($('lAd'),{x1:AX,y1:AY,x2:Cx,y2:AY});
+    set($('lOp'),{x1:Cx,y1:AY,x2:Cx,y2:By});
+    set($('lHi'),{x1:AX,y1:AY,x2:Cx,y2:By});
+    set($('hnd'),{cx:Cx,cy:By,'aria-valuenow':Math.round(st.a)});
+
+    var q = Math.min(14, ca*S*.5, co*S*.5);
+    set($('rt'),{d:'M'+(Cx-q)+' '+AY+' L'+(Cx-q)+' '+(AY-q)+' L'+Cx+' '+(AY-q)});
+
+    var r = Math.min(50, ca*S*.7);
+    set($('arc'),{d:'M'+AX+' '+AY+' L'+(AX+r)+' '+AY+' A'+r+' '+r+' 0 0 0 '+(AX+r*Math.cos(rad))+' '+(AY-r*Math.sin(rad))+' Z'});
+    var tr = Math.min(r+22, Math.max(r+10, 34));
+    set($('tTheta'),{x:AX+(r+20)*Math.cos(rad/2),y:AY-(r+20)*Math.sin(rad/2)});
+    $('tTheta').textContent = 'θ = ' + fmt(st.a,0)+'°';
+    $('tTheta').setAttribute('text-anchor','start');
+    set($('tTheta'),{x:AX+r+8,y:AY-14});
+
+    set($('tAd'),{x:(AX+Cx)/2,y:AY+24}); $('tAd').textContent = 'CA = '+fmt(ca,2);
+    set($('tOp'),{x:Cx+10,y:(AY+By)/2+5}); $('tOp').textContent = 'CO = '+fmt(co,2);
+    var mx=(AX+Cx)/2, my=(AY+By)/2;
+    var dx=Cx-AX, dy=By-AY, len=Math.hypot(dx,dy)||1;
+    set($('tHi'),{x:mx+(dy/len)*22,y:my-(dx/len)*22+5}); $('tHi').textContent = 'H = '+fmt(st.h,2);
+    set($('tA'),{x:AX-16,y:AY+18}); set($('tB'),{x:Cx+14,y:By-12}); set($('tC'),{x:Cx+10,y:AY+18});
+
+    $('vA').textContent = fmt(st.a,0)+'°';
+    $('vH').textContent = fmt(st.h,1);
+    $('rA').value = Math.round(st.a); $('rH').value = st.h;
+    var chips = document.querySelectorAll('#chips button');
+    for(var i=0;i<chips.length;i++) chips[i].classList.toggle('on', +chips[i].dataset.a === Math.round(st.a));
+
+    var showRec = $('rec').checked, html='';
+    defs.forEach(function(d){
+      if(d.r && !showRec) return;
+      var n = vals[d.f[0]], m = vals[d.f[1]];
+      html += '<div class="row"><span class="name">'+d.n+'</span>'+
+        '<span class="frac"><i class="'+d.f[0]+'">'+L[d.f[0]]+'</i> / <i class="'+d.f[1]+'">'+L[d.f[1]]+'</i></span>'+
+        '<span class="num">'+fmt(n,2)+' / '+fmt(m,2)+'</span>'+
+        '<span class="val">'+fmt(n/m)+'</span></div>';
+    });
+    $('rows').innerHTML = html;
+    $('bS').style.width = (Math.sin(rad)*100)+'%';
+    $('bC').style.width = (Math.cos(rad)*100)+'%';
+  }
+
+  function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+
+  // Arrastre del vértice B
+  var svg = $('svg'), hnd = $('hnd'), drag = false;
+  function toSvg(e){
+    var p = svg.createSVGPoint(); p.x=e.clientX; p.y=e.clientY;
+    return p.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  hnd.addEventListener('pointerdown',function(e){drag=true;hnd.setPointerCapture(e.pointerId);hnd.style.cursor='grabbing';e.preventDefault()});
+  hnd.addEventListener('pointerup',function(){drag=false;hnd.style.cursor='grab'});
+  hnd.addEventListener('pointermove',function(e){
+    if(!drag) return;
+    var p = toSvg(e), dx=p.x-AX, dy=AY-p.y;
+    st.a = clamp(Math.atan2(dy,dx)*180/Math.PI,1,89);
+    st.h = clamp(Math.round(Math.hypot(dx,dy)/S*2)/2,2,10);
+    render();
+  });
+  hnd.addEventListener('keydown',function(e){
+    var k=e.key, ok=true;
+    if(k==='ArrowRight'||k==='ArrowUp') st.a=clamp(Math.round(st.a)+(k==='ArrowUp'?1:-1)*-1,1,89);
+    else if(k==='ArrowLeft'||k==='ArrowDown') st.a=clamp(Math.round(st.a)-1,1,89);
+    else if(k==='+') st.h=clamp(st.h+.5,2,10);
+    else if(k==='-') st.h=clamp(st.h-.5,2,10);
+    else ok=false;
+    if(ok){e.preventDefault();render()}
+  });
+
+  $('rA').addEventListener('input',function(e){st.a=+e.target.value;render()});
+  $('rH').addEventListener('input',function(e){st.h=+e.target.value;render()});
+  $('rec').addEventListener('change',render);
+  $('chips').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    st.a=+b.dataset.a; render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
